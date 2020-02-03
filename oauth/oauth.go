@@ -91,6 +91,9 @@ func AuthenticateRequest(req *http.Request) *oauthErrors.RestError {
 
 	at, err := getAccessToken(accessTokenID)
 	if err != nil {
+		if err.Status == http.StatusNotFound {
+			return nil
+		}
 		return err
 	}
 
@@ -125,6 +128,7 @@ func getAccessToken(accessTokenID string) (*accessToken, *oauthErrors.RestError)
 		if err != nil {
 			return nil, oauthErrors.NewInternalServerError("invalid error interface while trying to unmarshal access token", err)
 		}
+
 		return nil, &restErr
 	}
 
