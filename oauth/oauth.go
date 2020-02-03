@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	oauthErrors "oauth-go/oauth/errors"
 	"strconv"
 	"strings"
 	"time"
+
+	oauthErrors "github.com/ravayak/oauth-go/oauth/errors"
 
 	"github.com/mercadolibre/golang-restclient/rest"
 )
