@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	oauthErrors "github.com/ravayak/oauth-go/oauth/errors"
+	rest_errors "github.com/ravayak/utils-go/rest_errors"
 
 	"github.com/mercadolibre/golang-restclient/rest"
 )
@@ -78,7 +78,7 @@ func GetClientID(req *http.Request) int64 {
 	return callerID
 }
 
-func AuthenticateRequest(req *http.Request) *oauthErrors.RestError {
+func AuthenticateRequest(req *http.Request) *rest_errors.RestError {
 	if req == nil {
 		return nil
 	}
@@ -113,21 +113,21 @@ func cleanRequest(req *http.Request) {
 	req.Header.Del(headerXCallerId)
 }
 
-func getAccessToken(accessTokenID string) (*accessToken, *oauthErrors.RestError) {
+func getAccessToken(accessTokenID string) (*accessToken, *rest_errors.RestError) {
 	res := oauthRestClient.Get(fmt.Sprintf("/oauth/access_token/%s", accessTokenID))
 
 	if res == nil || res.Response == nil {
 		// Timeout
-		return nil, oauthErrors.NewInternalServerError("invalid rest client response while trying to get access token",
-			oauthErrors.NewError("Invalid restclient response"))
+		return nil, rest_errors.NewInternalServerError("invalid rest client response while trying to get access token",
+			rest_errors.NewError("Invalid restclient response"))
 	}
 
 	if res.StatusCode > 299 {
 		// Error
-		var restErr oauthErrors.RestError
+		var restErr rest_errors.RestError
 		err := json.Unmarshal(res.Bytes(), &restErr)
 		if err != nil {
-			return nil, oauthErrors.NewInternalServerError("invalid error interface while trying to unmarshal access token", err)
+			return nil, rest_errors.NewInternalServerError("invalid error interface while trying to unmarshal access token", err)
 		}
 
 		return nil, &restErr
@@ -135,7 +135,7 @@ func getAccessToken(accessTokenID string) (*accessToken, *oauthErrors.RestError)
 
 	var at accessToken
 	if err := json.Unmarshal(res.Bytes(), &at); err != nil {
-		return nil, oauthErrors.NewInternalServerError("erro while trying to unmarshal access token", err)
+		return nil, rest_errors.NewInternalServerError("erro while trying to unmarshal access token", err)
 	}
 
 	return &at, nil
