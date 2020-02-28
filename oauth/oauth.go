@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -78,7 +79,7 @@ func GetClientID(req *http.Request) int64 {
 	return callerID
 }
 
-func AuthenticateRequest(req *http.Request) *rest_errors.RestError {
+func AuthenticateRequest(req *http.Request) rest_errors.RestError {
 	if req == nil {
 		return nil
 	}
@@ -92,7 +93,7 @@ func AuthenticateRequest(req *http.Request) *rest_errors.RestError {
 
 	at, err := getAccessToken(accessTokenID)
 	if err != nil {
-		if err.Status == http.StatusNotFound {
+		if err.Status() == http.StatusNotFound {
 			return nil
 		}
 		return err
@@ -113,13 +114,13 @@ func cleanRequest(req *http.Request) {
 	req.Header.Del(headerXCallerId)
 }
 
-func getAccessToken(accessTokenID string) (*accessToken, *rest_errors.RestError) {
+func getAccessToken(accessTokenID string) (*accessToken, rest_errors.RestError) {
 	res := oauthRestClient.Get(fmt.Sprintf("/oauth/access_token/%s", accessTokenID))
 
 	if res == nil || res.Response == nil {
 		// Timeout
 		return nil, rest_errors.NewInternalServerError("invalid rest client response while trying to get access token",
-			rest_errors.NewError("Invalid restclient response"))
+			errors.New("Invalid restclient response"))
 	}
 
 	if res.StatusCode > 299 {
@@ -130,7 +131,7 @@ func getAccessToken(accessTokenID string) (*accessToken, *rest_errors.RestError)
 			return nil, rest_errors.NewInternalServerError("invalid error interface while trying to unmarshal access token", err)
 		}
 
-		return nil, &restErr
+		return nil, restErr
 	}
 
 	var at accessToken
